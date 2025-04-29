@@ -94,6 +94,7 @@ HOURS = 60 * MINUTES
     timeout=24 * HOURS,
     allow_concurrent_inputs=1000,
     volumes={MODELS_DIR: volume},
+    secrets=[modal.Secret.from_name("custom-secret")],
 )
 @modal.asgi_app()
 def serve():
@@ -134,7 +135,7 @@ def serve():
 
     # security: inject dependency on authed routes
     async def is_authenticated(api_key: str = fastapi.Security(http_bearer)):
-        if api_key.credentials != TOKEN:
+        if api_key.credentials != os.environ["TOKEN"]:
             raise fastapi.HTTPException(
                 status_code=fastapi.status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid authentication credentials",
